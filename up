@@ -54,10 +54,10 @@ function extraclean
 	
 cleansys
 
-# Removes unused config files and orphans
+# Removes orphans
 if [ -f /usr/bin/deborphan ]
 	then
-		sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove;
+		#sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove;
 		echo ""
 		sudo deborphan | xargs sudo apt-get -y remove --purge
 	else
@@ -232,8 +232,7 @@ cat << _EOF_
 	then the --clean option. It will then run two extra 
 	options using optional dependencies deborphan and 
 	aptitude. These remove obsolete packages no longer
-	included in any repositories and unneeded 
-	config files and orphaned packages. 
+	included in any repositories and orphaned packages. 
 	
 	up --list = generate the package list
 	

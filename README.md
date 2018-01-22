@@ -147,8 +147,7 @@ Contents of Help Page
 	then the --clean option. It will then run two extra 
 	options using optional dependencies deborphan and 
 	aptitude. These remove obsolete packages no longer
-	included in any repositories and unneeded 
-	config files and orphaned packages. 
+	included in any repositories and orphaned packages. 
 	
 	up --list = generate the package list
 	
