@@ -122,10 +122,10 @@ Return codes
 Contents of Help Page
 ----------------------
 
- Up is a tool that automates the update procedure 
- for Debian and Ubuntu based Linux systems.
+	Up is a tool that automates the update procedure 
+	for Debian and Ubuntu based Linux systems.
 
- Commands:
+	Commands:
 	up = full system update.
 
 	Running "up" with no options will update the 
@@ -161,8 +161,8 @@ Contents of Help Page
 	
 	up --help = shows this help page.
 
- By Joe Collins www.ezeelinux.com 
- (GNU/General Public License version 2.0)
+	By Joe Collins www.ezeelinux.com 
+	(GNU/General Public License version 2.0)
 
 
 
