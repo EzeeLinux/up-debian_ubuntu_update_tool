@@ -1,93 +1,298 @@
 #!/bin/bash
 
+# ======================== HEADER =================
 # Up -- Debian/Ubuntu Update Tool (Version 1.0)
 # Advanced command to fully update system: "up" Adding the option "--clean" will
 # remove orphaned packages and auto-clean the apt cache. (January, 2018)
 # By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
 
-# Set BASH to quit script and exit on errors:
 
+# ====================== GLOBAL VARIABLES SETUP ==============
+# Set BASH to quit script and exit on errors:
 set -e
 
-# Functions:
+# define colours , red for errors, yellow for warnings, titles in blue
+RED=$(printf "\033[31;1m")
+YELLOW=$(printf "\033[33;1m")
+BLUE=$(printf "\033[36;1m")
+NORMAL=$(printf "\033[0m")
 
-update() {
+# ==================== FUNCTIONS ===============================
 
-echo "Starting full system update..."
+function updatesys
+{
+	
+msgFunc line 
+msgFunc blue " Starting full system update! "
+msgFunc line
+
 sudo apt-get update
 sudo apt-get dist-upgrade -yy
-
 }
 
-clean() {
-
-echo "Cleaning up..."
+function cleansys
+{
+echo ""
+msgFunc line 
+msgFunc blue " Starting system clean up! "
+msgFunc line
+echo ""
+# Remove dependencies that are no longer needed, because e.g. the 
+# package which needed the dependencies was removed. 
 sudo apt-get autoremove -yy
+# Removes package files that can no longer be downloaded and everything except
+# the lock file in /var/cache/apt/archives, including directories.
 sudo apt-get autoclean
+sudo apt-get -y clean
+}
+
+#FUNCTION HEADER
+# NAME : extraclean
+# DESCRIPTION : Call cleansys function and then carries out extra options 
+function extraclean 
+{
+	
+cleansys
+
+# Removes unused config files and orphans
+if [ -f /usr/bin/deborphan ]
+	then
+		sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove;
+		echo ""
+		sudo deborphan | xargs sudo apt-get -y remove --purge
+	else
+		msgFunc yellow "Up Warning: optional dependency Deborphan not found"
+		msgFunc yellow "skipping section."
+		echo ""
+		sleep 1
+fi
+
+# Remove packages no longer included in any repositories. 
+if [ -f /usr/bin/aptitude ]
+	then
+	 	sudo aptitude purge '~o'
+	else
+		msgFunc yellow "Up Warning: optional dependency aptitude not found"
+		msgFunc yellow "skipping section."
+		echo ""
+		sleep 1
+fi
+}
+
+#FUNCTION HEADER
+# NAME :  pkglist
+# DESCRIPTION: Creates a copy of packages list. 
+# INPUTS: $1 the path if not path passed uses /tmp/ as default
+function pkglist
+{
+	local dirVar=""
+	dirVar=$(date +%H%M-%d%b%y)"-pkglist"
+	echo ""
+	msgFunc line
+	msgFunc blue "- Making a copy of package list -"
+	msgFunc line
+	echo ""
+	
+	# Was a path passed?
+	if  [ -z "$2"  ]; 
+	then
+		# Default path
+		echo  "" 
+		msgFunc yellow "Up Warning: No path passed using default path"
+		msgFunc yellow "/tmp/"
+		cd /tmp/
+		mkdir -vp "$dirVar"
+		cd "$dirVar"
+	else
+		cd "$2" || (msgFunc red "path not found" && exit 2)
+		mkdir -vp "$dirVar"
+		cd "$dirVar"
+	fi
+	pwd
+	echo ""
+	echo -n "."
+	# (1) all packages 
+	dpkg --list | grep ^i > all_PKG
+	# (2) List native packages installed explicitly 
+	apt-mark showmanual > Exp_PKG
+	echo -n "."
+	#check if deborphan installed
+	if [ -f /usr/bin/deborphan ]
+	then
+		# (3) List packages that are installed but are not available in any installation source 
+		deborphan > noinstall_PKG
+		# (4) List packages not required by any other package
+		deborphan -anp1 > non-Dep_PKG
+		echo -n "."
+	else
+		echo ""
+		msgFunc yellow "Up Warning: optional dependency Deborphan not found"
+		msgFunc yellow "skipping steps 3and 4"
+		echo ""
+	fi
+	# (5) Get a dump of the whole system information - 
+	# Prints, Saves or similar the current state of the package management system. 
+	apt-cache stats > stats_PKG
+	echo -n "."
+	#check if aptitude installed
+	if [ -f /usr/bin/aptitude ]
+	then
+	 	# (6) List packages that were recently added to one of the installation sources,
+		aptitude search '~N' > Recent_add_PKG
+		# (7) list Installed packages by size
+		aptitude search "~i" --display-format "%p %I" --sort installsize > install_size_PKG
+		echo -n "."
+	else
+		echo ""
+		msgFunc yellow "Up Warning: optional dependency aptitude not found"
+		msgFunc yellow "skipping steps 6 and 7"
+		echo ""
+	fi
+	echo -n "."
+	# (8) List packages installed automatically (as dependencies)
+	apt-mark showauto > auto_Dep_PKG
+	echo -n "."
+	# (9) Prints a list of all installation sources including important information like URI, alias etc
+	apt-cache policy > Info_Source_PKG
+	# (10) list of non-standard repositories in use
+	cat /etc/apt/sources.list.d/*.list | grep -v "^#" > non_standard_PKG
+	# (11) list packages by install date 
+	grep installed /var/log/dpkg.log > Install_date_1_PKG
+	echo -n "."
+	# (12) list packages by install date less data
+	grep " install " /var/log/dpkg.log > Install_date_2_PKG
+	echo ""
+}
+
+#FUNCTION HEADER
+# NAME : msgFunc
+# DESCRIPTION : prints to screen
+#prints line, text 
+# INPUTS : $1 process name $2 text input
+# PROCESS :[1]  print line 
+# [2] print text $2 " red ,blue , norm yellow and highlight" 
+function msgFunc
+{
+	case "$1" in 
+		line) #print blue horizontal line of =
+			printf '\033[36;1m%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+			printf '%s' "${NORMAL}"
+		;;
+		
+		#print passed text string
+		red) printf '%s\n' "${RED}$2${NORMAL}" ;;
+		blue) printf '%s\n' "${BLUE}$2${NORMAL}" ;;
+		yellow)printf '%s\n' "${YELLOW}$2${NORMAL}" ;;
+		norm) printf '%s\n' "${NORMAL}$2" ;;
+			
+		*) #catch typos
+			printf '%s\n' "ERROR unknown input to msgFunc"
+		;;
+	esac
+}
+
+function leave
+{
+echo ""
+msgFunc line
+msgFunc blue " Up run Complete! "
+msgFunc line
+echo ""
+exit 0
 
 }
 
-leave() {
-
-echo "--------------------"
-echo "- Update Complete! -"
-echo "--------------------"
-exit
-
-}
-
-up-help() {
+function up-help
+{
 
 cat << _EOF_
 
- Up is a tool that automates the update procedure for Debian and Ubuntu based
- Linux systems.
+ Up is a tool that automates the update procedure 
+ for Debian and Ubuntu based Linux systems.
 
  Commands:
-    up = full system update.
+	up = full system update.
 
-    Running "up" with no options will update the apt cache and then perform a
-    full distribution update automatically.
+	Running "up" with no options will update the 
+	apt cache and then perform a
+	full distribution update automatically.
 
-    up --clean = full system update with cleanup.
+	up --clean = system update with cleanup.
 
-    Adding the "--clean" option will invoke the apt commands to search for and
-    remove locally cached packages that are no longer in the repositories and
-    remove orphaned packages that are no longer needed by programs.
+	Adding the "--clean" option will invoke the 
+	apt commands to search for and remove locally 
+	cached packages that are no longer 
+	in the repositories and remove orphaned packages 
+	that are no longer needed by programs.
 
-    up --help = shows this help page.
+	up --extraclean = system update with cleanup 
+	and extra options
+	
+	This option will run the full system update and 
+	then the --clean option. It will then run two extra 
+	options using optional dependencies deborphan and 
+	aptitude. These remove obsolete packages no longer
+	included in any repositories and unneeded 
+	config files and orphaned packages. 
+	
+	up --list = generate the package list
+	
+	This option generates a list of 12 files useful for system 
+	maintenance. A folder is created with following 
+	time/date stamp syntax HHMM-DDMONYY-pkglist.
+	If no path is passed the lists are placed in this folder at /tmp/
+	The user can pass a path as an argument 
+	for example: up --list "/home/userme/foo" 
+	
+	up --help = shows this help page.
 
- By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
+ By Joe Collins www.ezeelinux.com 
+ (GNU/General Public License version 2.0)
 
 _EOF_
-
 }
 
-# Execution.
+# ================= MAIN CODE ===================================
 
 # Tell 'em who we are...
-
-echo "Up -- Debian/Ubuntu Update Tool (Version 1.0)"
+echo ""
+msgFunc line
+msgFunc blue " Up -- Debian/Ubuntu Update Tool (Version 2.0) "
+msgFunc line
 
 # Update and clean:
 
 if [ "$1" == "--clean" ]; then
-    update
-    clean
-    leave
+	updatesys
+	cleansys
+	leave
+fi
+
+if [ "$1" == "--extraclean" ]; then
+	updatesys
+	extraclean
+	leave 
+fi
+
+if [ "$1" == "--list" ]; then
+	pkglist "$@"
+	leave 
 fi
 
 if [ "$1" == "--help" ]; then
-    up-help
-    exit
+	up-help
+	exit 0
 fi
 
 # Check for invalid argument
 
 if  [ -n "$1"  ]; then
-    echo "Up Error: Invalid argument. Try 'up --help' for more info."
-    exit 1
+	echo  "" 
+	msgFunc red "Up Error: Invalid argument. Try 'up --help' for more info."
+	echo ""
+	exit 1
 fi
 
-update
-leave
+updatesys
+leave 
+# ===================== END ============================
