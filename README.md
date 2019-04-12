@@ -51,7 +51,8 @@
     up --help = shows this help page.
 
  By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
- Installed by Aetesaki
+
+ Installer by Aetesaki
 
  Disclaimer:
 
