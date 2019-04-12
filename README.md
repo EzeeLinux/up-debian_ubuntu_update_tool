@@ -8,19 +8,25 @@
 
 2. Installation:
 
- Unzip the "up" bash script from the zip archive and move it to either
- /usr/local/bin or ~/bin. You can either do this from a command line or simply
- drag the file out of Archive Manager to wherever you'd like it to go.
+ Download the tool either by using git clone or by downloading the zip-file
+ and unzipping the files, then run
+```bash
+./upinst --help
+```
+ for a list of install options
 
  Note: scripts that are run from the ~/bin directory cannot be prefixed with
  'sudo' as the system will fail to find them. Those who intend to run up from
- a script for cron, anacron or systemd timers should place it in /usr/local/bin
+ a script for cron, anacron or systemd timers should install it using
+```bash
+./upinst --all
+```
  This is also the best practice if there are more than one administrator
  accounts on the machine.
 
 4. License.
 
- Up is free softare. You can redistribute it and/or modify it under the
+ Up is free software. You can redistribute it and/or modify it under the
  terms of the GNU General Public License Version 2.0. as published by
  the Free Software Foundation. A copy of the GNU GPL 2.0 is provided with the
  software.
@@ -45,6 +51,7 @@
     up --help = shows this help page.
 
  By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
+ Installed by Aetesaki
 
  Disclaimer:
 
