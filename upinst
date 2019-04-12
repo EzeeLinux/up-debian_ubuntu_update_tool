@@ -1,0 +1,148 @@
+#!/bin/bash
+# This script's framework was created using makescript 
+# version v0.15.0, dated 2019-04-11
+# Makescript and its accompanying scripts are copyrighted
+# by Aetesaki (c) 2018
+# 
+# upinst (c) 2019 aetesaki
+# 
+# Installer script for EzeeLinux' up-debian_ubuntu_update_tool
+#
+# ##################################################
+# HISTORY:
+# ##################################################
+#
+# * 2019-04-12 - v0.0.0  - First Creation
+#
+# ##################################################
+# Initializing constants and variables
+# ##################################################
+# Setting constants
+version="v0.0.0"            # Sets version variable
+lastEdited="2019-04-12"     # Sets last edited variable" $scriptNamePath
+# Declaring variables
+# Declare all variables to be used in the script 
+declare destination          # Install destination
+declare sysop=0              # To check if SUDO is required
+declare linked=0             # To check if script is to be linked
+declare myPath=$(dirname $0) # Full path of upinst
+# check if myPath is current directory
+if [ $myPath=="." ]; then
+    # replace myPath with current directory
+    myPath=$PWD
+fi
+# ##################################################
+# short help function
+# ##################################################
+shorthelp() {
+    # Edit as required
+    cat << EOF
+Usage: upinst --user [--link]
+       upinst --all
+       upinst --help
+       upinst --version"
+EOF
+}
+# ##################################################
+# no arguments gives short help
+# ##################################################
+if [ "$#" == "0" ]; then
+    shorthelp
+    exit 1
+fi 
+# ##################################################
+# -- help
+# ##################################################
+if [ "$1" == "--help" ]; then
+    shorthelp
+    # Write options and explanations
+    cat << EOF
+   --help                 Displays this text and exit.
+   --version              Displays the version of the script and exit.
+
+   -a, --all              Installs up in /usr/local/bin
+   -u, --user             Installs up in $HOME/bin
+   -l, --link             Installs up in $HOME/bin 
+                          as a link to the repository in 
+                          $myPath
+
+   NOTE: The -u, --user option will override the -a, --all option
+   NOTE: The -l, --link option can only be used with the -u, --user 
+         option, and should only be used if you are using git clone 
+         to download the update tool
+EOF
+    # Write information on arguments afterwards
+    # Write examples as required
+    exit 0
+fi 
+# ##################################################
+# -- version
+# ##################################################
+if [ "$1" == "--version" ]; then
+    cat << EOF
+upinst ${version}, dated ${lastEdited}
+(c) 2019 aetesaki
+
+Option iteration section lifted from
+https://natelandau.com/boilerplate-shell-script-template
+EOF
+    exit 0
+fi
+# ##################################################
+# Options
+#
+# Iterate over options breaking -ab into -a -b when 
+# needed and --foo=bar into --foo bar. Lifted from 
+# https://natelandau.com/boilerplate-shell-script-template/
+# ##################################################
+optstring=h
+while (($#)); do
+  case $1 in
+    # If option is of type -ab
+    -[!-]?*)
+      # Loop over each character starting with the second
+      for ((i=1; i < ${#1}; i++)); do
+        c=${1:i:1}
+
+        # Add current char to options
+        options+=("-$c")
+
+        # If option takes a required argument, and it's not the last char make
+        # the rest of the string its argument
+        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+          options+=("+${1:i+1}")
+          break
+        fi
+      done
+      ;;
+
+    # If option is of type --foo=bar
+    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+    # add --endopts for --
+    --) options+=(--endopts) ;;
+    # Otherwise, nothing special
+    *) options+=("$1") ;;
+  esac
+  shift
+done
+set -- "${options[@]}"
+unset options
+# Read the options and set stuff
+while [[ $1 = -?* ]]; do
+  case $1 in
+    # insert cases 
+    # use shift; to catch arguments in $1
+    -a|--all) destination="/usr/local/bin"; sysop=1;;
+    -u|--user) destination="$HOME/bin"; sysop=0;;
+    -l|--link) linked=1;;
+    *) echo "ERROR: option $1 is not valid."; exit 1;; 
+  esac
+  shift
+done
+
+# ##################################################
+# Main section
+# ##################################################
+# Write your script here
+echo $destination
+echo $sysop $linked
