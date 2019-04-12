@@ -81,7 +81,7 @@ fi
 if [ "$1" == "--version" ]; then
     cat << EOF
 upinst ${version}, dated ${lastEdited}
-(c) 2019 aetesaki
+(c) 2019 aetesaki PRE-RELEASE VERSION
 
 Option iteration section lifted from
 https://natelandau.com/boilerplate-shell-script-template
