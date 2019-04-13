@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Up -- Debian/Ubuntu Update Tool (Version 1.1)
+# Up -- Debian/Ubuntu Update Tool (Version 1.2)
 # Advanced command to fully update system: "up" Adding the option "--clean" will
 # remove orphaned packages and auto-clean the apt cache. (January, 2018)
 # By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
@@ -63,32 +63,32 @@ _EOF_
 
 }
 
+up-error(){
+
+    echo "Up Error: Invalid argument. Try 'up --help' for more info." >&2
+
+}
+
 # Execution.
 
 # Tell 'em who we are...
 
-echo "Up -- Debian/Ubuntu Update Tool (Version 1.1)"
+echo "Up -- Debian/Ubuntu Update Tool (Version 1.2)"
 
-# Update and clean:
-
-if [ "$1" == "--clean" ]; then
-    update
-    clean
-    leave
-fi
-
-if [ "$1" == "--help" ]; then
-    up-help
-    exit
-fi
-
-# Check for invalid argument
+# Check for arguments
 
 if  [ -n "$1"  ]; then
-    echo "Up Error: Invalid argument. Try 'up --help' for more info." >&2
-    exit 1
+    case $1 in
+        --clean) cleanset=1;;
+        --help) up-help; exit;;
+        *) up-error; exit 1;;
+    esac
 fi
 
-update
-leave
+# Run the script
 
+update
+if [ "$cleanset" == "1" ]; then
+    clean
+fi
+leave

@@ -1,0 +1,250 @@
+#!/bin/bash
+# This script's framework was created using makescript 
+# version v0.15.0, dated 2019-04-11
+# Makescript and its accompanying scripts are copyrighted
+# by Aetesaki (c) 2018
+# 
+# upinst (c) 2019 aetesaki
+# 
+# Installer script for EzeeLinux' up-debian_ubuntu_update_tool
+#
+# ##################################################
+# HISTORY:
+# ##################################################
+#
+# * 2019-04-12 - v0.0.0  - First Creation
+# * 2019-04-12 - v0.0.1  - creating the installer script
+# * 2019-04-12 - v0.0.2  - fixing minor errors
+# * 2019-04-12 - v0.0.3  - correcting failing tests
+# * 2019-04-12 - v0.0.4  - correcting path error
+# * 2019-04-12 - v0.0.5  - correcting failing tests
+# * 2019-04-12 - v0.0.6  - correcting failing tests
+# * 2019-04-13 - v1.0.0  - Released
+#
+# ##################################################
+# Initializing constants and variables
+# ##################################################
+# Setting constants
+version="v1.0.0"            # Sets version variable
+lastEdited="2019-04-13"     # Sets last edited variable
+# Declaring variables
+# Declare all variables to be used in the script 
+declare sysop=0              # To check if SUDO is required
+declare linked=0             # To check if script is to be linked
+declare myPath=$(dirname $0) # Full path of upinst
+# check if myPath is current directory
+if [ $myPath=="." ]; then
+    # replace myPath with current directory
+    myPath=$PWD
+fi
+# ##################################################
+# short help function
+# ##################################################
+shorthelp() {
+    # Edit as required
+    cat << EOF
+Usage: upinst --user [--link]
+       upinst --all
+       upinst --help
+       upinst --version"
+EOF
+}
+# ##################################################
+# no arguments gives short help
+# ##################################################
+if [ "$#" == "0" ]; then
+    shorthelp
+    exit 1
+fi 
+# ##################################################
+# -- help
+# ##################################################
+if [ "$1" == "--help" ]; then
+    shorthelp
+    # Write options and explanations
+    cat << EOF
+   --help                 Displays this text and exit.
+   --version              Displays the version of the script and exit.
+
+   -a, --all              Installs up in /usr/local/bin
+   -u, --user             Installs up in $HOME/bin
+   -l, --link             Installs up in $HOME/bin 
+                          as a link to the repository in 
+                          $myPath
+
+   NOTE: The -u, --user option will override the -a, --all option
+   NOTE: The -l, --link option can only be used with the -u, --user 
+         option, and should only be used if you are using git clone 
+         to download the update tool
+EOF
+    exit 0
+fi 
+# ##################################################
+# -- version
+# ##################################################
+if [ "$1" == "--version" ]; then
+    cat << EOF
+upinst ${version}, dated ${lastEdited}
+(c) 2019 aetesaki INITIAL RELEASE VERSION
+
+Option iteration section lifted from
+https://natelandau.com/boilerplate-shell-script-template
+EOF
+    exit 0
+fi
+# ##################################################
+# Options
+#
+# Iterate over options breaking -ab into -a -b when 
+# needed and --foo=bar into --foo bar. Lifted from 
+# https://natelandau.com/boilerplate-shell-script-template/
+# ##################################################
+optstring=h
+while (($#)); do
+  case $1 in
+    # If option is of type -ab
+    -[!-]?*)
+      # Loop over each character starting with the second
+      for ((i=1; i < ${#1}; i++)); do
+        c=${1:i:1}
+
+        # Add current char to options
+        options+=("-$c")
+
+        # If option takes a required argument, and it's not the last char make
+        # the rest of the string its argument
+        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+          options+=("+${1:i+1}")
+          break
+        fi
+      done
+      ;;
+
+    # If option is of type --foo=bar
+    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+    # add --endopts for --
+    --) options+=(--endopts) ;;
+    # Otherwise, nothing special
+    *) options+=("$1") ;;
+  esac
+  shift
+done
+set -- "${options[@]}"
+unset options
+# Read the options and set stuff
+while [[ $1 = -?* ]]; do
+  case $1 in
+    # insert cases 
+    # use shift; to catch arguments in $1
+    -a|--all) sysop=1;;
+    -u|--user) sysop=0;;
+    -l|--link) linked=1;;
+    *) echo "ERROR: option $1 is not valid."; exit 1;; 
+  esac
+  shift
+done
+
+# ##################################################
+# Main section
+# ##################################################
+echo "
+######################
+# Installing up - an update tool for Debian and Ubuntu based distros
+######################"
+# Check if install is to be systemwide
+if [ "$sysop" == "1" ]; then
+    echo "# up will be installed systemwide"
+    # then check if up is already installed
+    if [ -f "/usr/local/bin/up" ]; then
+        # then update if repositiory is newer
+        echo "# up is previously installed"
+        sudo cp -u up /usr/local/bin
+        # check for error code
+        if [ ! "$?" == "0" ]; then
+            # then display error code and exit
+            echo "# up was not updated"
+            exit 1
+        else
+            # else display update message
+            echo "# up was updated successfully"
+        fi
+    else
+        # else copy up to /usr/local/bin
+        echo "# installing up in /usr/local/bin"
+        sudo cp up /usr/local/bin
+        # check for error code
+        if [ ! "$?" == "0" ]; then
+            # then display error code and exit
+            echo "# up was not installed"
+            exit 1
+        else
+            # else display install message
+            echo "# up was installed successfully"
+        fi
+    fi
+else
+    # else check if $HOME/bin does not exist
+    if [ ! -d "$HOME/bin" ]; then
+        echo "# $HOME/bin does not exist"
+        echo "# Creating $HOME/bin"
+        # create $HOME/bin
+        mkdir $HOME/bin
+        # check for error code
+        if [ ! "$?" == "0" ]; then
+            # then display error code and exit
+            echo "# couldn't create $HOME/bin"
+            exit 1
+        else
+            # else adding $HOME/bin to $PATH
+            echo "# adding $HOME/bin to \$PATH"
+            PATH="$HOME/bin:$PATH"
+        fi
+    fi
+    # check if up is to be linked
+    if [ "$linked" == "1" ]; then
+        # then create a link to repository in $HOME/bin
+        echo "# creating a link to the repository in $HOME/bin"
+        pushd $HOME/bin
+        ln -s $myPath/up
+        # check for error code
+        if [ ! "$?" == "0" ]; then
+            # then display error code and exit
+            echo "# couldn't link up to $myPath/up"
+            exit 1
+        else
+            # else displaying linked message
+            echo "# up successfully linked to $myPath/up"
+        fi
+        popd
+    else
+        # else check if up is already installed
+        if [ -f "$HOME/bin/up" ]; then
+            # then update if repository is newer
+            echo "# up is previously installed"
+            cp -u up $HOME/bin
+            # check for error code
+            if [ ! "$?" == "0" ]; then
+                # then display error code and exit
+                echo "# up was not updated"
+                exit 1
+            else
+                # else display update message
+                echo "# up was updated successfully"
+            fi
+        else
+            # else copy up to $HOME/bin
+            echo "# installing up in $HOME/bin"
+            cp up $HOME/bin
+            # check for error code
+            if [ ! "$?" == "0" ]; then
+                # then display error code and exit
+                echo "# up was not installed"
+                exit 1
+            else
+                # else display install message
+                echo "# up was installed successfully"
+            fi
+        fi
+    fi
+fi
+echo "######################"
