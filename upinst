@@ -19,13 +19,14 @@
 # * 2019-04-12 - v0.0.4  - correcting path error
 # * 2019-04-12 - v0.0.5  - correcting failing tests
 # * 2019-04-12 - v0.0.6  - correcting failing tests
+# * 2019-04-13 - v1.0.0  - Released
 #
 # ##################################################
 # Initializing constants and variables
 # ##################################################
 # Setting constants
-version="v0.0.6"            # Sets version variable
-lastEdited="2019-04-12"     # Sets last edited variable" $scriptNamePath
+version="v1.0.0"            # Sets version variable
+lastEdited="2019-04-13"     # Sets last edited variable
 # Declaring variables
 # Declare all variables to be used in the script 
 declare sysop=0              # To check if SUDO is required
@@ -84,7 +85,7 @@ fi
 if [ "$1" == "--version" ]; then
     cat << EOF
 upinst ${version}, dated ${lastEdited}
-(c) 2019 aetesaki PRE-RELEASE VERSION
+(c) 2019 aetesaki INITIAL RELEASE VERSION
 
 Option iteration section lifted from
 https://natelandau.com/boilerplate-shell-script-template
