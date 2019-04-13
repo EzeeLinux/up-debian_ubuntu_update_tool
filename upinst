@@ -14,12 +14,17 @@
 #
 # * 2019-04-12 - v0.0.0  - First Creation
 # * 2019-04-12 - v0.0.1  - creating the installer script
+# * 2019-04-12 - v0.0.2  - fixing minor errors
+# * 2019-04-12 - v0.0.3  - correcting failing tests
+# * 2019-04-12 - v0.0.4  - correcting path error
+# * 2019-04-12 - v0.0.5  - correcting failing tests
+# * 2019-04-12 - v0.0.6  - correcting failing tests
 #
 # ##################################################
 # Initializing constants and variables
 # ##################################################
 # Setting constants
-version="v0.0.1"            # Sets version variable
+version="v0.0.6"            # Sets version variable
 lastEdited="2019-04-12"     # Sets last edited variable" $scriptNamePath
 # Declaring variables
 # Declare all variables to be used in the script 
@@ -146,15 +151,15 @@ echo "
 # Installing up - an update tool for Debian and Ubuntu based distros
 ######################"
 # Check if install is to be systemwide
-if [ $sysop ]; then
+if [ "$sysop" == "1" ]; then
     echo "# up will be installed systemwide"
     # then check if up is already installed
-    if [ -f "/usr/local/bin/up"]; then
+    if [ -f "/usr/local/bin/up" ]; then
         # then update if repositiory is newer
         echo "# up is previously installed"
         sudo cp -u up /usr/local/bin
         # check for error code
-        if [ $? ]; then
+        if [ ! "$?" == "0" ]; then
             # then display error code and exit
             echo "# up was not updated"
             exit 1
@@ -167,7 +172,7 @@ if [ $sysop ]; then
         echo "# installing up in /usr/local/bin"
         sudo cp up /usr/local/bin
         # check for error code
-        if [ $? ]; then
+        if [ ! "$?" == "0" ]; then
             # then display error code and exit
             echo "# up was not installed"
             exit 1
@@ -184,7 +189,7 @@ else
         # create $HOME/bin
         mkdir $HOME/bin
         # check for error code
-        if [ $? ]; then
+        if [ ! "$?" == "0" ]; then
             # then display error code and exit
             echo "# couldn't create $HOME/bin"
             exit 1
@@ -195,12 +200,13 @@ else
         fi
     fi
     # check if up is to be linked
-    if [ $linked ]; then
+    if [ "$linked" == "1" ]; then
         # then create a link to repository in $HOME/bin
+        echo "# creating a link to the repository in $HOME/bin"
         pushd $HOME/bin
-        ln $myPath/up
+        ln -s $myPath/up
         # check for error code
-        if [ $? ]; then
+        if [ ! "$?" == "0" ]; then
             # then display error code and exit
             echo "# couldn't link up to $myPath/up"
             exit 1
@@ -216,7 +222,7 @@ else
             echo "# up is previously installed"
             cp -u up $HOME/bin
             # check for error code
-            if [ $? ]; then
+            if [ ! "$?" == "0" ]; then
                 # then display error code and exit
                 echo "# up was not updated"
                 exit 1
@@ -229,7 +235,7 @@ else
             echo "# installing up in $HOME/bin"
             cp up $HOME/bin
             # check for error code
-            if [ $? ]; then
+            if [ ! "$?" == "0" ]; then
                 # then display error code and exit
                 echo "# up was not installed"
                 exit 1
