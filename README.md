@@ -18,14 +18,14 @@
  This is also the best practice if there are more than one administrator
  accounts on the machine.
 
-4. License.
+3. License.
 
  Up is free softare. You can redistribute it and/or modify it under the
  terms of the GNU General Public License Version 2.0. as published by
  the Free Software Foundation. A copy of the GNU GPL 2.0 is provided with the
  software.
 
-5. Contents of Help Page:
+4. Contents of Help Page:
 
  Up is a tool that automates the update procedure for Debian and Ubuntu based
  Linux systems.
