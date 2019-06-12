@@ -7,7 +7,11 @@
 # By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
 #
 # ...And way we go!
+#check first if we have internet conncetion before perfoming any task
 
+wget -q --tries=10 --timeout=20 --spider https://google.com &> /dev/null
+if [[ $? -eq 0 ]]
+then
 # Check for less utility and install if needed:
 
 dpkg -l | grep -qw less || sudo apt install less -yyq
@@ -134,4 +138,10 @@ fi
 
 update
 leave
-
+#if we do not have internet connection ,do the following
+else
+	sleep 4
+	echo "--------------------------------"
+	echo "-CHECK YOUR INTERNET CONNECTION-"
+	echo "--------------------------------"
+fi	
