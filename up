@@ -7,7 +7,11 @@
 # By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
 #
 # ...And way we go!
+#check first if we have internet conncetion before perfoming any task
 
+wget -q --tries=10 --timeout=20 --spider https://google.com &> /dev/null
+if [[ $? -eq 0 ]]
+then
 # Check for less utility and install if needed:
 
 dpkg -l | grep -qw less || sudo apt install less -yyq
@@ -39,6 +43,20 @@ echo "Removing orpahned packages..."
 sudo apt autoremove -yy
 
 }
+fix(){
+	echo "fixing the broken packages..."
+	#first remove the lockfile
+	# Could not get lock /var/lib/apt/lists/lock - open (11: Resource temporarily unavailable)
+	sudo rm /var/lib/apt/lists/lock &> /dev/null
+	#fix the missing packages or if package broke after installation
+	sudo apt update --fix-missing
+	sudo apt install -f
+	#incase the package broke while being installed
+	sudo dpkg --configure -a
+	echo "-----------------------------------------"
+	echo "done fixing the packages,run up to update"
+	echo "-----------------------------------------"
+}
 
 leave() {
 
@@ -68,14 +86,16 @@ less << _EOF_
 
     up --remove = full system update with orphaned packages removed.
     up --clean = full system update with full cleanup.
-
+	
     Adding the "--clean" option will invoke the apt commands to search for and
     remove locally cached packages that are no longer in the repositories and
     remove orphaned packages that are no longer needed by programs. 
 
     The "--remove" option only removes orphaned packages, leaving the apt cache
     alone. 
-
+	up --fix = fix the error of missing/broken packages
+				also fix the  Could not get lock /var/lib/apt/lists/lock 
+				- open (11: Resource temporarily unavailable)
     up --help = shows this help page.
 
  By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
@@ -124,7 +144,10 @@ if [ "$1" == "--help" ]; then
     up_help
     exit
 fi
-
+if [ "$1" == "--fix" ]; then
+	fix
+	exit
+fi	
 # Check for invalid argument
 
 if  [ -n "$1"  ]; then
@@ -134,4 +157,10 @@ fi
 
 update
 leave
-
+#if we do not have internet connection ,do the following
+else
+	sleep 4
+	echo "--------------------------------"
+	echo "-CHECK YOUR INTERNET CONNECTION-"
+	echo "--------------------------------"
+fi	
