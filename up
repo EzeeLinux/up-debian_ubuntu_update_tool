@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Up -- Debian/Ubuntu Update Tool (Version 1.2)
+# Up -- Debian/Ubuntu Update Tool (Version 1.3)
 # Advanced command to fully update system: "up" Adding the option "--clean" will
 # remove orphaned packages and auto-clean the apt cache. (January, 2018)
-# Adding the option "--remove" will just reomve orphaned packages. 
+# Adding the option "--remove" will just reomve orphaned packages.
 # By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
 #
 # ...And way we go!
@@ -37,6 +37,7 @@ remove() {
 
 echo "Removing orpahned packages..."
 sudo apt autoremove -yy
+sudo apt-get remove --purge $(dpkg -l | grep "^rc" | awk '{print $2}') -yy
 
 }
 
@@ -53,7 +54,7 @@ up_help() {
 
 less << _EOF_
 
- Up -- Debian/Ubuntu Update Tool (Version 1.2)  -help
+ Up -- Debian/Ubuntu Update Tool (Version 1.3)  -help
 
  Up is a tool that automates the update procedure for Debian and Ubuntu based
  Linux systems.
@@ -62,7 +63,7 @@ less << _EOF_
 
  Commands:
     up = full system update.
-    
+
     Running "up" with no options will update the apt cache and then perform a
     full distribution update automatically.
 
@@ -71,15 +72,15 @@ less << _EOF_
 
     Adding the "--clean" option will invoke the apt commands to search for and
     remove locally cached packages that are no longer in the repositories and
-    remove orphaned packages that are no longer needed by programs. 
+    remove orphaned packages that are no longer needed by programs.
 
     The "--remove" option only removes orphaned packages, leaving the apt cache
-    alone. 
+    alone.
 
     up --help = shows this help page.
 
  By Joe Collins www.ezeelinux.com (GNU/General Public License version 2.0)
- 
+
  Disclaimer:
 
  THIS SOFTWARE IS PROVIDED BY EZEELINUX “AS IS” AND ANY EXPRESS OR IMPLIED
@@ -101,7 +102,7 @@ _EOF_
 
 # Tell 'em who we are...
 
-echo "Up -- Debian/Ubuntu Update Tool (Version 1.2)"
+echo "Up -- Debian/Ubuntu Update Tool (Version 1.3)"
 
 # Update and clean:
 
@@ -134,4 +135,3 @@ fi
 
 update
 leave
-
