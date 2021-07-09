@@ -37,7 +37,7 @@ remove() {
 
 echo "Removing orpahned packages..."
 sudo apt autoremove -yy
-sudo apt-get remove --purge $(dpkg -l | grep "^rc" | awk '{print $2}') -yy
+sudo apt remove --purge $(dpkg -l | grep "^rc" | awk '{print $2}') -yy
 
 }
 
