@@ -27,7 +27,7 @@
 
 4. Contents of Help Page:
 
- Up -- Debian/Ubuntu Update Tool (Version 1.2)  -help
+ Up -- Debian/Ubuntu Update Tool (Version 1.3)  -help
 
  Up is a tool that automates the update procedure for Debian and Ubuntu based
  Linux systems.
