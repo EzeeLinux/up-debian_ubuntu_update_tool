@@ -47,30 +47,31 @@ dpkg -l | grep -qw less || sudo apt install less -yyq
 set -e
 
 # Functions:
+fix() {
+echo -e "\n${GREEN}Fixing the broken packages...${NOCOLOR}"
+sudo dpkg --configure -a
+sudo apt install -f
+sudo apt --fix-broken install -y    
+}
 
 update() {
 echo -e "\n${GREEN}Starting full system update...${NOCOLOR}"
-sudo dpkg --configure -a
-sudo apt install -f
-sudo apt --fix-broken install -y
+
 sudo apt update --fix-missing
 sudo apt full-upgrade -yy
 sudo apt-get dist-upgrade -y
-
 }
 
 clean() {
 echo -e "\n${GREEN}Removing apt cache packages that can no longer be downloaded...${NOCOLOR}"
 sudo apt clean
 sudo apt autoclean
-
 }
 
 remove() {
 echo -e "\n${GREEN}Removing orpahned packages...${NOCOLOR}"
 sudo apt autoremove -yy
 sudo apt remove --purge $(dpkg -l | grep "^rc" | awk '{print $2}') -yy
-
 }
 
 leave() {
@@ -81,7 +82,6 @@ echo -e "${GREEN}--------------------${NOCOLOR}\n"
 echo -e "${GREEN}- Update Complete! -${NOCOLOR}"
 echo -e "\n${GREEN}$TIME_STAMP ${NOCOLOR}"
 exit
-
 }
 
 up_help() {
@@ -128,7 +128,6 @@ less << _EOF_
  POSSIBILITY OF SUCH DAMAGE.
 
 _EOF_
-
 }
 
 #
@@ -168,7 +167,6 @@ if  [ -n "$1"  ]; then
     echo -e "${RED}Up Error: Invalid argument.${NOCOLOR}\n ${GREEN}Try 'up --help' for more info.${NOCOLOR}" >&2
     exit 1
 fi  
-
 }
 
 #
@@ -177,5 +175,6 @@ fi
 user
 connect
 execution
+fix
 update
 leave
