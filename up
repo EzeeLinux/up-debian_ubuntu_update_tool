@@ -38,7 +38,7 @@ sudo apt autoclean
 }
 
 remove() {
-echo "${GREEN}Removing orpahned packages...${NOCOLOR}"
+echo -e "${GREEN}Removing orpahned packages...${NOCOLOR}"
 sudo apt autoremove -yy
 sudo apt remove --purge $(dpkg -l | grep "^rc" | awk '{print $2}') -yy
 
@@ -130,7 +130,7 @@ fi
 # Check for invalid argument
 
 if  [ -n "$1"  ]; then
-    echo "${RED}Up Error: Invalid argument.${NOCOLOR}\n ${GREEN}Try 'up --help' for more info.${NOCOLOR}" >&2
+    echo -e "${RED}Up Error: Invalid argument.${NOCOLOR}\n ${GREEN}Try 'up --help' for more info.${NOCOLOR}" >&2
     exit 1
 fi
 
