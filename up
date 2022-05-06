@@ -8,6 +8,36 @@
 #
 # ...And way we go!
 
+# Color variables 
+
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+NOCOLOR="\033[0m"
+
+# Time variable
+
+RIGHT_NOW=$(date +"%x %r %z")
+TIME_STAMP="Updated $RIGHT_NOW by $USER"
+
+# User root check
+
+user() {
+	if [ $(id -u) != "0" ];then
+		echo " Please run this script with root user!"
+		exit 1
+	fi
+}
+
+# Internet connection check
+
+connect() {
+	ping -c 1 -w 3 google.com > /dev/null 2>&1
+	if [ "$?" != 0 ];then
+		echo " This script needs an active internet connection!"
+		exit 1
+	fi
+}
+
 # Check for less utility and install if needed:
 
 dpkg -l | grep -qw less || sudo apt install less -yyq
@@ -17,44 +47,47 @@ dpkg -l | grep -qw less || sudo apt install less -yyq
 set -e
 
 # Functions:
+fix() {
+echo -e "\n${GREEN}Fixing the broken packages...${NOCOLOR}"
+sudo dpkg --configure -a
+sudo apt install -f
+sudo apt --fix-broken install -y    
+}
 
 update() {
+echo -e "\n${GREEN}Starting full system update...${NOCOLOR}"
 
-echo "Starting full system update..."
-sudo apt update
+sudo apt update --fix-missing
 sudo apt full-upgrade -yy
-
+sudo apt-get dist-upgrade -y
 }
 
 clean() {
-
-echo "Removing apt cache packages that can no longer be downloaded..."
+echo -e "\n${GREEN}Removing apt cache packages that can no longer be downloaded...${NOCOLOR}"
+sudo apt clean
 sudo apt autoclean
-
 }
 
 remove() {
-
-echo "Removing orpahned packages..."
+echo -e "\n${GREEN}Removing orpahned packages...${NOCOLOR}"
 sudo apt autoremove -yy
 sudo apt remove --purge $(dpkg -l | grep "^rc" | awk '{print $2}') -yy
-
 }
 
 leave() {
+echo -e "\n${GREEN}--------------------${NOCOLOR}"
+echo -e "${GREEN}- Update Complete! -${NOCOLOR}"
+echo -e "${GREEN}--------------------${NOCOLOR}\n"
 
-echo "--------------------"
-echo "- Update Complete! -"
-echo "--------------------"
+echo -e "${GREEN}- Update Complete! -${NOCOLOR}"
+echo -e "\n${GREEN}$TIME_STAMP ${NOCOLOR}"
 exit
-
 }
 
 up_help() {
-
 less << _EOF_
 
- Up -- Debian/Ubuntu Update Tool (Version 1.3)  -help
+ Up -- Debian/Ubuntu Update Tool (Version 1.4)  -help
 
  Up is a tool that automates the update procedure for Debian and Ubuntu based
  Linux systems.
@@ -95,14 +128,16 @@ less << _EOF_
  POSSIBILITY OF SUCH DAMAGE.
 
 _EOF_
-
 }
 
-# Execution.
+#
+# Execution function
+
+execution() {
 
 # Tell 'em who we are...
 
-echo "Up -- Debian/Ubuntu Update Tool (Version 1.3)"
+echo -e "\n${GREEN}Up -- Debian/Ubuntu Update Tool (Version 1.3)${NOCOLOR}"
 
 # Update and clean:
 
@@ -129,9 +164,17 @@ fi
 # Check for invalid argument
 
 if  [ -n "$1"  ]; then
-    echo "Up Error: Invalid argument. Try 'up --help' for more info." >&2
+    echo -e "${RED}Up Error: Invalid argument.${NOCOLOR}\n ${GREEN}Try 'up --help' for more info.${NOCOLOR}" >&2
     exit 1
-fi
+fi  
+}
 
+#
+# Call functions
+
+user
+connect
+execution
+fix
 update
 leave
